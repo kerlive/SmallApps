@@ -1,3 +1,11 @@
+# PyQt5 PojectManagement-Status
+#code by kevin
+
+__author__ = "_Kevin_Chan_"
+__copyright__ = "Copyright (C) 2022-year Kevin"
+__license__ = "GPL-3.0"
+__version__ = "0.0.1"
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
