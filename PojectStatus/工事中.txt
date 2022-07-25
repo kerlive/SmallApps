@@ -1,0 +1,12 @@
+——————to be in working order.....
+1. target_project
+
+______to be in worked pausing.....
+2. example_project
+3. f1
+4. f2
+5. f3
+6. f4
+7. f5
+8. output
+9. __pycache__
