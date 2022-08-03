@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="Button">
+    <file>UI/Element/bold.png</file>
+    <file>UI/Element/italic.png</file>
+    <file>UI/Element/other.png</file>
+    <file>UI/Element/plus.png</file>
+    <file>UI/Element/strikethrough.png</file>
+    <file>UI/Element/TB.png</file>
+    <file>UI/Element/underline.png</file>
+    <file>UI/Element/x.png</file>
+  </qresource>
+</RCC>
