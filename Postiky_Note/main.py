@@ -4,13 +4,14 @@
 __author__ = "_My_Software_"
 __copyright__ = "Copyright (C) 2022-year Kevin"
 __license__ = "MIT or GPL-3.0"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 import os, sys
 
+
 from PyQt5.QtWidgets import *
-from PyQt5 import uic, QtCore
+from PyQt5 import uic, QtCore, QtGui
 import UIresource_rc
 
 ui_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,22 +24,34 @@ class Postiky_Note(base_0, form_0):
     def __init__(self):
         super(base_0, self).__init__()
         self.setupUi(self)
-        #self.setFixedSize(280, 400)
+
+
         self.setWindowTitle('PostList')
+        self.setWindowIcon(QtGui.QIcon('./Posit.ico'))
 
-        self.skNum = 0
-        
+        self.skNum = 1
+        self.noteSheet = {}
 
-        self.addButton.clicked.connect(self.dupWidget)
+        self.addButton.clicked.connect(self.newNotes)
 
-    
-    def dupWidget(self):
-        self.dup = {self.skNum: self.newNotes()}
+
+        self.listWidget.setFixedWidth(181)
+        self.perviewWidget.setMinimumWidth(341)
+        self.perviewWidget.setMinimumHeight(311)
+
 
 
     def newNotes(self):
-        self.newOne = Notes()
-        self.newOne.show()
+        self.noteSheet[self.skNum] = Notes()
+        self.skNum = self.skNum + 1
+        print (self.skNum)
+        
+"""     self.newOne = Notes()
+        self.new2 = Notes()
+        self.skNum[0] = Notes()
+        
+        for n in range(1,3):
+            self.skNum[n] = Notes()"""
 
 
 
@@ -65,12 +78,88 @@ class Notes(moveWidget, form_1):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        self.closeButton.clicked.connect(self.close)
+        self.closeButton.clicked.connect(self.noteClose)
         self.colorButton.clicked.connect(self.changeColor)
 
         self.controlTools.setVisible(False)
         self.invisiableArea.installEventFilter(self)
         self.controlTools.installEventFilter(self)
+
+        self.show()
+
+        # effect a blur filler for shadow
+
+        b_blur = QGraphicsBlurEffect()
+        b_blur.setBlurRadius(15)
+        b_blur.setBlurHints(QGraphicsBlurEffect.QualityHint)
+
+        self.label_2.setGraphicsEffect(b_blur)
+
+        
+        # switch
+        self.bold = False
+        self.italic = False
+        self.underline = False
+        self.strikeout = False
+
+        # font format
+        self.boldButton.clicked.connect(self.setBold)
+        self.italicButton.clicked.connect(self.setItalic)
+        self.underlineButton.clicked.connect(self.setUnderline)
+        self.strikethroughButton.clicked.connect(self.setStrikeout)
+        self.togglebulletButton.clicked.connect(self.setBulletpoint)
+
+
+    def noteClose(self):
+        text = self.textEdit.toPlainText()
+        if text != '':
+            print (text)
+            self.close()
+        else:
+            self.close()
+
+    def setBold(self):
+        if self.bold == False:
+            self.textEdit.setFontWeight(QtGui.QFont.Bold)
+            self.bold = True
+            print(self.textEdit.currentCharFormat())
+        else:
+            self.textEdit.setFontWeight(QtGui.QFont.Normal)
+            self.bold = False
+
+    def setItalic(self):
+        if self.italic == False:
+            self.textEdit.setFontItalic(True)
+            self.italic = True
+        else:
+            self.textEdit.setFontItalic(False)
+            self.italic = False
+
+    def setUnderline(self):
+        if self.underline == False:
+            self.textEdit.setFontUnderline(True)
+            self.underline = True
+        else:
+            self.textEdit.setFontUnderline(False)
+            self.underline = False
+
+    def setStrikeout(self):
+        if self.strikeout == False:
+            format = self.textEdit.currentCharFormat()
+            format.setFontStrikeOut(True)
+            self.textEdit.setCurrentCharFormat(format)
+            self.strikeout = True
+        else:
+            format = self.textEdit.currentCharFormat()
+            format.setFontStrikeOut(False)
+            self.textEdit.setCurrentCharFormat(format)
+            self.strikeout = False
+
+    def setBulletpoint(self):
+        print(".")
+
+
+
 
     def changeColor(self):
         match self.colorNum:
