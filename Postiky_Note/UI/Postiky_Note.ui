@@ -6,30 +6,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>587</width>
-    <height>385</height>
+    <width>580</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="listWidget" native="true">
+   <widget class="QWidget" name="draftWidget" native="true">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>181</width>
-      <height>311</height>
+      <width>191</width>
+      <height>321</height>
      </rect>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>10</x>
        <y>10</y>
        <width>171</width>
-       <height>281</height>
+       <height>301</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="listLayout">
@@ -59,7 +59,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QListView" name="listView"/>
+       <widget class="QListWidget" name="listView"/>
       </item>
      </layout>
     </widget>
@@ -70,7 +70,7 @@
       <x>219</x>
       <y>19</y>
       <width>341</width>
-      <height>311</height>
+      <height>321</height>
      </rect>
     </property>
    </widget>
@@ -80,7 +80,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>587</width>
+     <width>580</width>
      <height>21</height>
     </rect>
    </property>

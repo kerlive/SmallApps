@@ -9,4 +9,7 @@
     <file>UI/Element/underline.png</file>
     <file>UI/Element/x.png</file>
   </qresource>
+  <qresource prefix="icon">
+    <file>Posit.ico</file>
+  </qresource>
 </RCC>
