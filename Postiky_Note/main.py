@@ -7,7 +7,7 @@ __license__ = "GPL-3.0"
 __version__ = "0.0.3"
 
 
-import os, sys, time, hashlib, gzip, struct
+import os, sys, time, hashlib, gzip, struct, random
 
 from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtCore, QtGui
@@ -65,14 +65,20 @@ class Postiky_Note(base_0, form_0):
 
         # Button
         self.addButton.clicked.connect(self.newNotes)
-        self.listView.itemClicked.connect(self.open_draft)
-        #self.listView.itemDoubleClicked.connect(self.openDraftNotes)
+        self.deleteButton.clicked.connect(self.draftDel)
+        self.listView.itemClicked.connect(self.print_to_Editor)
+        self.listView.itemDoubleClicked.connect(self.openDraftNotes)
+        
+    def print_to_Editor(self):
+        text = self.open_draft()
+        self.draftEditor.setText(text)
 
     def open_draft(self):
         self.stackedLayout.setCurrentIndex(1)
         name = str(self.listView.currentItem().text())
         dn  = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft/"+name)
-        print(dn)
+
+    
         with open(dn, 'rb') as file:
                 data = file.read()
 
@@ -80,21 +86,27 @@ class Postiky_Note(base_0, form_0):
             fmt = '%ds %dx %ds' % (start, end-start, len(buffer)-end) 
             return b''.join(struct.unpack(fmt, buffer))
 
-
-
         rCmpd = remove_bytes(data, len(data)-8, len(data))
-
-        rEC = remove_bytes(data, 0 , len(data)-8)
-
-        rSentence =  gzip.decompress(rCmpd).decode("utf-8")
+        rEC = (remove_bytes(data, 0 , len(data)-8)).decode("ASCII")
 
         rHash = hashlib.sha256(rCmpd).hexdigest()
-
-        print("read Error Check:" + rEC.decode("ASCII") +"---- rHash for check:" + rHash)
-
-        print("decode data from file:" + rSentence)
-
-        self.draftEditor.setText(rSentence)
+        checkHash = [*rHash][0] + [*rHash][7] + [*rHash][15] + [*rHash][35] + rHash[len(rHash) - 4:]
+        if rEC == checkHash:
+            rSentence =  gzip.decompress(rCmpd).decode("utf-8")
+            return rSentence
+            #self.draftEditor.setText(rSentence)
+        else:
+            return ("<span style=\"color:red;\">***** some issuse happened, data can not be read!!! *****</span>")
+            #self.draftEditor.setText("<span style=\"color:red;\">***** some issuse happened, data can not be read!!! *****</span>")
+    
+    def draftDel(self):
+        if self.listView.currentRow() != -1:
+            name = str(self.listView.currentItem().text())
+            dn  = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft/"+name)
+            if os.path.exists(dn):
+                os.remove(dn)
+            self.list_Draft()
+            self.stackedLayout.setCurrentIndex(0)
 
     def list_Draft(self):
         self.listView.clear()
@@ -108,8 +120,10 @@ class Postiky_Note(base_0, form_0):
         
     def openDraftNotes(self):
         self.noteSheet[self.skNum] = Notes()
-        #self.noteSheet[self.skNum].textInput(self.open_draft)
+        text = self.open_draft()
+        self.noteSheet[self.skNum].textEdit.setText(text)
         self.skNum = self.skNum + 1
+        self.draftDel()
 
     def newNotes(self):
         self.noteSheet[self.skNum] = Notes()
@@ -141,11 +155,14 @@ class Notes(moveWidget, form_1):
         super(base_1, self).__init__()
         self.setupUi(self)
 
-        self.colorNum = 0
+        self.colorNum = random.randrange(6)
+        self.changeColor()
 
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
+        # Button
+        self.addButton.clicked.connect(demo.newNotes)
         self.closeButton.clicked.connect(self.noteClose)
         self.colorButton.clicked.connect(self.changeColor)
 
@@ -199,6 +216,7 @@ class Notes(moveWidget, form_1):
         text = self.textEdit.toPlainText()
         if text != '':
             self.save_draft(text)
+            demo.list_Draft()
             self.close()
         else:
             self.close()
