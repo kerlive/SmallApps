@@ -4,14 +4,29 @@
 __author__ = "_Kevin Chan_"
 __copyright__ = "Copyright (C) 2022 Kevin"
 __license__ = "GPL-3.0"
-__version__ = "0.0.3"
-
+__version__ = "0.1.0"
 
 import os, sys, time, hashlib, gzip, struct, random
+
+from multiprocessing import shared_memory
+key = "Postiky_Note"
+instance = 1
+try:
+    single = shared_memory.SharedMemory(key, create=False)
+    single.buf[0] = 0
+except:
+    instance = 0
+if instance == 0:
+    single = shared_memory.SharedMemory(key, create=True,size=1)
+    single.buf[0] = 1
+else:
+    sys.exit("App is runing")
 
 from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtCore, QtGui
 import UIresource_rc
+
+import weakness_data_encryption as wde
 
 ui_dir = os.path.dirname(os.path.abspath(__file__))
 ui_path = os.path.join(ui_dir,"UI")
@@ -19,65 +34,27 @@ ui_path = os.path.join(ui_dir,"UI")
 form_0, base_0 = uic.loadUiType(os.path.join(ui_path,"Postiky_Note.ui"))
 form_1, base_1 = uic.loadUiType(os.path.join(ui_path,"Note.ui"))
 
-class Postiky_Note(base_0, form_0):
-    def __init__(self):
-        super(base_0, self).__init__()
-        self.setupUi(self)
-
-
-        self.setWindowTitle('PostList')
-        self.setWindowIcon(QtGui.QIcon(':/icon/Posit.ico'))
-        self.setFixedSize(580, 380)
-
-        # stacked layout
-        self.stackedLayout = QStackedLayout()
-        self.perviewWidget.setLayout(self.stackedLayout)
-
-        self.page0 = QWidget()
-        self.icon = QLabel()
-        self.icon.setStyleSheet("background-image : url(':/icon/Posit.ico'); background-repeat: no repeat; background-position: center;")
-        self.iconlayout = QGridLayout()
-        self.iconlayout.addWidget(self.icon)
-        self.page0.setLayout(self.iconlayout)
-        self.stackedLayout.addWidget(self.page0)
-
-        self.page1 = QWidget()
-        self.draftEditor = QTextEdit()
-        self.page1Layout = QFormLayout()
-        self.page1Layout.addWidget(self.draftEditor)
-        self.page1.setLayout(self.page1Layout)
-        self.stackedLayout.addWidget(self.page1)
-
-
+class File_packaged():
+    def save_draft(draft, fileName):
         
+        sentence = draft.encode('utf-8')
+        cmpd = gzip.compress(sentence)
 
-        # Layout setting
-        self.draftWidget.setLayout(self.listLayout)
-        self.draftWidget.setFixedWidth(181)
-        self.perviewWidget.setMinimumWidth(341)
-        self.perviewWidget.setMinimumHeight(311)
-        # set a number for open a mutiple widget
-        self.skNum = 1
-        self.noteSheet = {}
+        hash = hashlib.sha256(cmpd).hexdigest()
 
-        # list draft files
-        self.list_Draft()
+        EC = [*hash][0] + [*hash][7] + [*hash][15] + [*hash][35] + hash[len(hash) - 4:]
 
-        # Button
-        self.addButton.clicked.connect(self.newNotes)
-        self.deleteButton.clicked.connect(self.draftDel)
-        self.listView.itemClicked.connect(self.print_to_Editor)
-        self.listView.itemDoubleClicked.connect(self.openDraftNotes)
+        draft_path = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft")
+        if not os.path.exists(draft_path):
+            os.makedirs(draft_path)
+
+        with open(os.path.join(draft_path,fileName), 'wb') as file:
+            file.write(cmpd)
+            file.write(EC.encode('ASCII'))
+
+    def open_draft(fileName):
         
-    def print_to_Editor(self):
-        text = self.open_draft()
-        self.draftEditor.setText(text)
-
-    def open_draft(self):
-        self.stackedLayout.setCurrentIndex(1)
-        name = str(self.listView.currentItem().text())
-        dn  = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft/"+name)
-
+        dn  = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft/"+fileName)
     
         with open(dn, 'rb') as file:
                 data = file.read()
@@ -94,15 +71,231 @@ class Postiky_Note(base_0, form_0):
         if rEC == checkHash:
             rSentence =  gzip.decompress(rCmpd).decode("utf-8")
             return rSentence
-            #self.draftEditor.setText(rSentence)
+            #self.draftBrowser.setText(rSentence)
         else:
             return ("<span style=\"color:red;\">***** some issuse happened, data can not be read!!! *****</span>")
-            #self.draftEditor.setText("<span style=\"color:red;\">***** some issuse happened, data can not be read!!! *****</span>")
-    
+            #self.draftBrowser.setText("<span style=\"color:red;\">***** some issuse happened, data can not be read!!! *****</span>")
+
+
+
+class Postiky_Note(base_0, form_0):
+    def __init__(self):
+        super(base_0, self).__init__()
+        self.setupUi(self)
+
+        wde.forincludetesting()
+
+        self.setWindowTitle('Notes_List')
+        self.setWindowIcon(QtGui.QIcon(':/icon/Posit.ico'))
+        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
+        self.setFixedSize(580, 380)
+
+        # stacked layout
+        self.stackedLayout = QStackedLayout()
+        self.perviewWidget.setLayout(self.stackedLayout)
+
+        self.page0 = QWidget()
+        self.icon = QLabel()
+        self.icon.setStyleSheet("background-image : url(':/icon/Posit.ico'); background-repeat: no repeat; background-position: center;")
+        self.iconlayout = QGridLayout()
+        self.iconlayout.addWidget(self.icon)
+        self.page0.setLayout(self.iconlayout)
+        self.stackedLayout.addWidget(self.page0)
+
+        self.page1 = QWidget()
+        self.draftBrowser = QTextBrowser()
+        self.draftBrowser.setStyleSheet("font: 12pt 'Times New Roman';")
+        self.page1Layout = QFormLayout()
+        self.page1Layout.addWidget(self.draftBrowser)
+        self.page1.setLayout(self.page1Layout)
+        self.stackedLayout.addWidget(self.page1)
+
+        self.page2 = QWidget()
+        self.pw_e = QLineEdit()
+        self.cpw_e = QLineEdit()
+        self.rmbk_e = QLineEdit()
+        self.pw_e.setEchoMode(QLineEdit.Password)
+        self.cpw_e.setEchoMode(QLineEdit.Password)
+        self.encpto = QFormLayout()
+        self.encpto.addRow("Remember-key:", self.rmbk_e)
+        self.encpto.addRow("Password:", self.pw_e)
+        self.encpto.addRow("Conform Password:", self.cpw_e)
+        dlgLayout = QVBoxLayout()
+        # Add a button box
+        self.btnBox = QDialogButtonBox()
+        self.btnBox.setStandardButtons(
+            QDialogButtonBox.Save | QDialogButtonBox.Cancel
+        )
+        # Set the layout on the dialog
+        dlgLayout.addLayout(self.encpto)
+        dlgLayout.addWidget(self.btnBox)
+        self.page2.setLayout(dlgLayout)
+        self.stackedLayout.addWidget(self.page2)
+
+        self.page3 = QWidget()
+        self.rmbk_d = QLabel()
+        self.pw_d = QLineEdit()
+        self.cpw_d = QLineEdit()
+        self.pw_d.setEchoMode(QLineEdit.Password)
+        self.cpw_d.setEchoMode(QLineEdit.Password)
+        self.decpto = QFormLayout()
+        self.decryptButton = QPushButton('Accepted')
+        self.decpto.addRow("Remember-key:", self.rmbk_d)
+        self.decpto.addRow("Password:", self.pw_d)
+        self.decpto.addRow("Conform Password:",self.cpw_d)
+        self.decpto.addRow('', self.decryptButton)
+        self.page3.setLayout(self.decpto)
+        self.stackedLayout.addWidget(self.page3)
+
+
+        # Layout setting
+        self.draftWidget.setLayout(self.listLayout)
+        self.draftWidget.setFixedWidth(181)
+        self.perviewWidget.setMinimumWidth(341)
+        self.perviewWidget.setMinimumHeight(311)
+        self.addButton.setMaximumWidth(41)
+        # set a number for open a mutiple widget
+        self.skNum = 1
+        self.noteSheet = {}
+
+        # list draft files
+        self.list_Draft()
+        self.listView.setWordWrap(True)
+
+        # Button
+        self.addButton.clicked.connect(self.newNotes)
+        self.cryptoButton.clicked.connect(self.crypto_page)
+        self.deleteButton.clicked.connect(self.draftDel)
+        self.listView.itemClicked.connect(self.print_to_Browser)
+        self.listView.itemDoubleClicked.connect(self.openDraftNotes)
+        self.btnBox.accepted.connect(self.save_crypto)
+        self.btnBox.rejected.connect(self.crypto_page_reset)
+        self.decryptButton.clicked.connect(self.read_crypto)
+
+        # Button Icon
+        self.addButton.setIcon(QtGui.QIcon(":/Button/UI/Element/plus.png"))
+        self.cryptoButton.setIcon(QtGui.QIcon(":/Button/UI/Element/locked.png"))
+        self.deleteButton.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
+
+        # TrayIcon
+        self.trayIcon = QSystemTrayIcon()
+        self.trayIcon.setIcon(QtGui.QIcon(":/icon/Posit.ico"))
+        self.trayIcon.setVisible(True)
+
+        self.trayIcon.activated.connect(self.onTrayIconActivated)
+
+        menu = QMenu()
+        info = QAction("About",self)
+        info.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        info.triggered.connect(self.about)
+        menu.addAction(info)
+
+        quit = QAction("Quit",self)
+        quit.setIcon(self.style().standardIcon(QStyle.SP_TitleBarCloseButton))
+        quit.triggered.connect(app.quit)
+        menu.addAction(quit)
+
+        self.trayIcon.setContextMenu(menu)
+
+    def about(self):
+        About = QMessageBox.information(
+            self,
+            "About Postiky Note",
+            "Postiky Note is a free opensource software \n programmed in Python3, based on PyQt5.\n Copyright (c) 2022 Kevin\n Author: Kevin Chan(E) 陈 作乾（中） ケン・チェン（日） https://github.com/kerlive/\n License: GPL-3.0\n Version: 0.1.0\n",
+            buttons=QMessageBox.Yes ,
+            defaultButton=QMessageBox.Yes,
+        )
+
+    def onTrayIconActivated(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.show()
+        if reason == QSystemTrayIcon.Trigger:
+            self.hide()
+
+    def anotherCall(self):
+        cTimer = QtCore.QTimer(self)
+        cTimer.start(1000)
+        cTimer.timeout.connect(self.checkNew)
+    def checkNew(self):
+        if single.buf[0] == 0:
+            self.show()
+            single.buf[0] = 1
+
+    def crypto_page(self):
+        if  self.listView.currentRow() != -1 :
+            if str(self.listView.currentItem().text())[:6] != '_ECPD_':
+                self.stackedLayout.setCurrentIndex(2)  
+
+    def crypto_page_reset(self):
+            self.stackedLayout.setCurrentIndex(0)
+            self.listView.setCurrentRow(-1)
+            self.rmbk_e.setText('')
+            self.pw_e.setText('')
+            self.cpw_e.setText('')
+
+    def save_crypto(self):
+        password = self.pw_e.text()
+        comform = self.cpw_e.text()
+        if password != '' and comform != '' :
+            if len(password) > 5:
+                if password == comform :
+                    data = File_packaged.open_draft(self.listView.currentItem().text())
+                    crypted_data = wde.data_encryption(password, data) + '.' + self.rmbk_e.text()
+                    print("data:")
+                    print(data)
+                    print("crypted data:")
+                    print(crypted_data)
+                    print("password:")
+                    print(password)
+                    fileName = time.strftime("_ECPD_%Y-%b-%d %Hh-%Mm-%Ss_",time.localtime())+ '.N' +str(time.time()).split('.')[1] +'.bin'
+                    File_packaged.save_draft(crypted_data, fileName)
+                    self.draftDel()
+                    self.crypto_page_reset()
+
+                else:
+                    self.trayIcon.showMessage("ERROR!", "password comform failed.")
+            else:
+                self.trayIcon.showMessage("ERROR!", "password width less than 6.")
+        else:
+            self.trayIcon.showMessage("ERROR!", "password is NONE!")
+
+    def read_crypto(self):
+        data = File_packaged.open_draft(self.listView.currentItem().text())
+        crypto = data.split('.')[0]
+        password = self.pw_d.text()
+        comform = self.cpw_d.text()
+        if password != '' and comform != '' :
+            if len(password) > 5:
+                if password == comform :
+                    dcpd = wde.data_conversion(password, crypto)
+                    if dcpd != '':
+                        self.stackedLayout.setCurrentIndex(1)
+                        self.draftBrowser.setText(dcpd)
+                    else:
+                        print ("ERROR!", "that wasn't a correct password")
+                else:
+                    self.trayIcon.showMessage("ERROR!", "password comform failed.")
+            else:
+                self.trayIcon.showMessage("ERROR!", "password width less than 6.")
+        else:
+            self.trayIcon.showMessage("ERROR!", "password is NONE!")
+
+        
+    def print_to_Browser(self):
+        if str(self.listView.currentItem().text())[:6] != '_ECPD_':
+            text = File_packaged.open_draft(self.listView.currentItem().text())
+            self.draftBrowser.setText(text)
+            self.stackedLayout.setCurrentIndex(1)
+        else:
+            self.stackedLayout.setCurrentIndex(3)
+            self.rmbk_d.setText(File_packaged.open_draft(self.listView.currentItem().text()).split('.')[1])
+            self.pw_d.setText('')
+            self.cpw_d.setText('')
+
     def draftDel(self):
         if self.listView.currentRow() != -1:
             name = str(self.listView.currentItem().text())
-            dn  = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft/"+name)
+            dn  = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft/"+name)
             if os.path.exists(dn):
                 os.remove(dn)
             self.list_Draft()
@@ -110,7 +303,7 @@ class Postiky_Note(base_0, form_0):
 
     def list_Draft(self):
         self.listView.clear()
-        draft_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft")
+        draft_path = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft")
         if not os.path.exists(draft_path):
             os.makedirs(draft_path)
         
@@ -119,15 +312,16 @@ class Postiky_Note(base_0, form_0):
                 self.listView.addItem(d)
         
     def openDraftNotes(self):
-        self.noteSheet[self.skNum] = Notes()
-        text = self.open_draft()
-        self.noteSheet[self.skNum].textEdit.setText(text)
-        self.skNum = self.skNum + 1
-        self.draftDel()
+        if str(self.listView.currentItem().text())[:6] != '_ECPD_':
+            self.noteSheet[self.skNum] = Notes()
+            text = File_packaged.open_draft(self.listView.currentItem().text())
+            self.noteSheet[self.skNum].textEdit.setText(text)
+            self.skNum = self.skNum + 1
+            self.draftDel()
 
     def newNotes(self):
         self.noteSheet[self.skNum] = Notes()
-        self.skNum = self.skNum + 1
+        self.skNum += 1
         
 """     self.newOne = Notes()
         self.new2 = Notes()
@@ -155,11 +349,14 @@ class Notes(moveWidget, form_1):
         super(base_1, self).__init__()
         self.setupUi(self)
 
-        self.colorNum = random.randrange(6)
-        self.changeColor()
-
+        self.setWindowTitle('PostIt')
+        self.setWindowIcon(QtGui.QIcon(':/icon/Posit.ico'))
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+        # background color
+        self.colorNum = random.randrange(6)
+        self.changeColor()
 
         # Button
         self.addButton.clicked.connect(demo.newNotes)
@@ -180,12 +377,12 @@ class Notes(moveWidget, form_1):
 
         self.label_2.setGraphicsEffect(b_blur)
 
-        
         # switch
         self.bold = False
         self.italic = False
         self.underline = False
         self.strikeout = False
+        self.lock = False
 
         # font format
         self.boldButton.clicked.connect(self.setBold)
@@ -193,33 +390,35 @@ class Notes(moveWidget, form_1):
         self.underlineButton.clicked.connect(self.setUnderline)
         self.strikethroughButton.clicked.connect(self.setStrikeout)
         self.togglebulletButton.clicked.connect(self.setBulletpoint)
-
-    def save_draft(self, draft):
-        
-        fileName = time.strftime("%Y-%b-%d_%Hh-%Mm-%Ss_",time.localtime())+ 'Nmb' +str(time.time()).split('.')[1] +'.bin'
-        sentence = draft.encode('utf-8')
-        cmpd = gzip.compress(sentence)
-
-        hash = hashlib.sha256(cmpd).hexdigest()
-
-        EC = [*hash][0] + [*hash][7] + [*hash][15] + [*hash][35] + hash[len(hash) - 4:]
-
-        draft_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),"Draft")
-        if not os.path.exists(draft_path):
-            os.makedirs(draft_path)
-
-        with open(os.path.join(draft_path,fileName), 'wb') as file:
-            file.write(cmpd)
-            file.write(EC.encode('ASCII'))
+        self.cryptoButton.clicked.connect(self.crypto)
+    
 
     def noteClose(self):
         text = self.textEdit.toPlainText()
         if text != '':
-            self.save_draft(text)
+            # if self.lock == True:
+            #       dilog window:
+            #           text = wde.data_encryption(key,text)
+            #           demo.save_crypto(text)
+            # else:
+            fileName = time.strftime("%Y-%b-%d %Hh-%Mm-%Ss_",time.localtime())+ '.N' +str(time.time()).split('.')[1] +'.bin'
+            File_packaged.save_draft(text, fileName)
             demo.list_Draft()
             self.close()
         else:
             self.close()
+
+    def encryption(self):
+
+            print("open a dailog creat remember-key and passwod")
+    
+    def crypto(self):
+        if self.lock == False:
+            self.lock = True
+            self.cryptoButton.setStyleSheet("background-image: url(:/Button/UI/Element/locked.png);	background-position: center; background-repeat: no-repeat; border: 0;")
+        else:
+            self.lock =False
+            self.cryptoButton.setStyleSheet("background-image: url(:/Button/UI/Element/unlocked.png); background-position: center; background-repeat: no-repeat; border: 0;")
 
     def setBold(self):
         if self.bold == False:
@@ -262,32 +461,33 @@ class Notes(moveWidget, form_1):
         print(".")
 
 
-
-
     def changeColor(self):
-        match self.colorNum:
-            case 0:
+        color = self.colorNum
+        if color == 0:
                 self.colorNum = 1
                 self.label.setStyleSheet('background-color: rgb(228, 249, 224);')
-            case 1:
+                self.textEdit.setStyleSheet('background-color: rgb(228, 249, 224);  border: 0; font: 12pt "Times New Roman";')
+        if color == 1:
                 self.colorNum = 2
                 self.label.setStyleSheet('background-color: rgb(255, 228, 241);')
-            case 2:
+                self.textEdit.setStyleSheet('background-color: rgb(255, 228, 241);  border: 0;  font: 12pt "Times New Roman";')
+        if color == 2:
                 self.colorNum = 3
                 self.label.setStyleSheet('background-color: rgb(242, 230, 255);')
-            case 3:
+                self.textEdit.setStyleSheet('background-color: rgb(242, 230, 255);  border: 0;  font: 12pt "Times New Roman";')
+        if color == 3:
                 self.colorNum = 4
                 self.label.setStyleSheet('background-color: rgb(226, 241, 255);')
-            case 4:
+                self.textEdit.setStyleSheet('background-color: rgb(226, 241, 255);  border: 0;  font: 12pt "Times New Roman";')
+        if color == 4:
                 self.colorNum = 5
                 self.label.setStyleSheet('background-color: rgb(243, 242, 241);')
-            case 5:
+                self.textEdit.setStyleSheet('background-color: rgb(243, 242, 241);  border: 0;  font: 12pt "Times New Roman";')
+        if color == 5:
                 self.colorNum = 0
                 self.label.setStyleSheet('background-color: rgb(255, 247, 209);')
+                self.textEdit.setStyleSheet('background-color: rgb(255, 247, 209);  border: 0;  font: 12pt "Times New Roman";')
             
-
-            
-        
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.Enter:

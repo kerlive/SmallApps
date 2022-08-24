@@ -28,7 +28,7 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>171</width>
+       <width>241</width>
        <height>301</height>
       </rect>
      </property>
@@ -43,7 +43,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="encryptButton">
+         <widget class="QPushButton" name="cryptoButton">
           <property name="text">
            <string>Encrypt</string>
           </property>
@@ -59,7 +59,11 @@
        </layout>
       </item>
       <item>
-       <widget class="QListWidget" name="listView"/>
+       <widget class="QListWidget" name="listView">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

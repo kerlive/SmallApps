@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="Button">
+    <file>UI/Element/locked.png</file>
+    <file>UI/Element/unlocked.png</file>
     <file>UI/Element/bold.png</file>
     <file>UI/Element/italic.png</file>
     <file>UI/Element/other.png</file>
