@@ -140,12 +140,15 @@ class Postiky_Note(base_0, form_0):
         self.cpw_d = QLineEdit()
         self.pw_d.setEchoMode(QLineEdit.Password)
         self.cpw_d.setEchoMode(QLineEdit.Password)
+        self.maskButton = QPushButton()
+        self.maskButton.setText("Masked")
+        self.Mask = True
         self.decpto = QFormLayout()
         self.decryptButton = QPushButton('Accepted')
         self.decpto.addRow("Remember-key:", self.rmbk_d)
         self.decpto.addRow("Password:", self.pw_d)
         self.decpto.addRow("Conform Password:",self.cpw_d)
-        self.decpto.addRow('', self.decryptButton)
+        self.decpto.addRow(self.maskButton, self.decryptButton)
         self.page3.setLayout(self.decpto)
         self.stackedLayout.addWidget(self.page3)
 
@@ -173,6 +176,7 @@ class Postiky_Note(base_0, form_0):
         self.btnBox.accepted.connect(self.save_crypto)
         self.btnBox.rejected.connect(self.crypto_page_reset)
         self.decryptButton.clicked.connect(self.view_crypto)
+        self.maskButton.clicked.connect(self.echoMask)
 
         # Button Icon
         self.addButton.setIcon(QtGui.QIcon(":/Button/UI/Element/plus.png"))
@@ -223,6 +227,18 @@ class Postiky_Note(base_0, form_0):
         if single.buf[0] == 0:
             self.show()
             single.buf[0] = 1
+
+    def echoMask(self):
+        if self.Mask == True:
+            self.Mask = False
+            self.pw_d.setEchoMode(QLineEdit.Normal)
+            self.cpw_d.setEchoMode(QLineEdit.Normal)
+            self.maskButton.setText("Masking")
+        else:
+            self.Mask = True
+            self.pw_d.setEchoMode(QLineEdit.Password)
+            self.cpw_d.setEchoMode(QLineEdit.Password)
+            self.maskButton.setText("Masked")
 
     def crypto_page(self):
         if  self.listView.currentRow() != -1 :
