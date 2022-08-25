@@ -7,6 +7,7 @@ __license__ = "GPL-3.0"
 __version__ = "0.1.0"
 
 import os, sys, time, hashlib, gzip, struct, random
+from pickle import NONE
 
 from multiprocessing import shared_memory
 key = "Postiky_Note"
@@ -114,6 +115,7 @@ class Postiky_Note(base_0, form_0):
         self.pw_e = QLineEdit()
         self.cpw_e = QLineEdit()
         self.rmbk_e = QLineEdit()
+        self.rmbk_e.setPlaceholderText("write some thing here about password.")
         self.pw_e.setEchoMode(QLineEdit.Password)
         self.cpw_e.setEchoMode(QLineEdit.Password)
         self.encpto = QFormLayout()
@@ -170,7 +172,7 @@ class Postiky_Note(base_0, form_0):
         self.listView.itemDoubleClicked.connect(self.openDraftNotes)
         self.btnBox.accepted.connect(self.save_crypto)
         self.btnBox.rejected.connect(self.crypto_page_reset)
-        self.decryptButton.clicked.connect(self.read_crypto)
+        self.decryptButton.clicked.connect(self.view_crypto)
 
         # Button Icon
         self.addButton.setIcon(QtGui.QIcon(":/Button/UI/Element/plus.png"))
@@ -185,6 +187,7 @@ class Postiky_Note(base_0, form_0):
         self.trayIcon.activated.connect(self.onTrayIconActivated)
 
         menu = QMenu()
+
         info = QAction("About",self)
         info.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
         info.triggered.connect(self.about)
@@ -229,9 +232,9 @@ class Postiky_Note(base_0, form_0):
     def crypto_page_reset(self):
             self.stackedLayout.setCurrentIndex(0)
             self.listView.setCurrentRow(-1)
-            self.rmbk_e.setText('')
-            self.pw_e.setText('')
-            self.cpw_e.setText('')
+            self.rmbk_e.clear()
+            self.pw_e.clear()
+            self.cpw_e.clear()
 
     def save_crypto(self):
         password = self.pw_e.text()
@@ -253,33 +256,64 @@ class Postiky_Note(base_0, form_0):
                     self.crypto_page_reset()
 
                 else:
-                    self.trayIcon.showMessage("ERROR!", "password comform failed.")
+                    self.showErrorDialog("password comform failed.")
             else:
-                self.trayIcon.showMessage("ERROR!", "password width less than 6.")
+                self.showErrorDialog("password width less than 6.")
         else:
-            self.trayIcon.showMessage("ERROR!", "password is NONE!")
+            self.showErrorDialog("please fill out password format: \n you need over 6 Number,Alpha or Sign.\n exp:'123abc+-*'\n if you want you can use Number only!\n exp:'123456'")
 
-    def read_crypto(self):
+    def read_crypto(self, password, comform):
         data = File_packaged.open_draft(self.listView.currentItem().text())
         crypto = data.split('.')[0]
-        password = self.pw_d.text()
-        comform = self.cpw_d.text()
         if password != '' and comform != '' :
             if len(password) > 5:
                 if password == comform :
                     dcpd = wde.data_conversion(password, crypto)
                     if dcpd != '':
-                        self.stackedLayout.setCurrentIndex(1)
-                        self.draftBrowser.setText(dcpd)
+                        return dcpd
                     else:
-                        print ("ERROR!", "that wasn't a correct password")
+                        self.showErrorDialog("password incorrect.")
                 else:
-                    self.trayIcon.showMessage("ERROR!", "password comform failed.")
+                    self.showErrorDialog("password comform failed.")
             else:
-                self.trayIcon.showMessage("ERROR!", "password width less than 6.")
+                self.showErrorDialog("password width less than 6.")
         else:
-            self.trayIcon.showMessage("ERROR!", "password is NONE!")
+            self.showErrorDialog("password format is incomplete.")
+    def view_crypto(self):
+        view = self.read_crypto(self.pw_d.text(), self.cpw_d.text())
+        if view != None:
+            self.draftBrowser.setText(view)
+            self.stackedLayout.setCurrentIndex(1)
 
+    def open_crypto(self):
+
+        self.pw_d_tn = QLineEdit()
+        self.cpw_d_tn = QLineEdit()
+        self.pw_d_tn.setEchoMode(QLineEdit.Password)
+        self.cpw_d_tn.setEchoMode(QLineEdit.Password)
+        self.toNote = QFormLayout()
+        self.deToNoteButton = QPushButton('Accepted')
+        self.toNote.addRow("Password:", self.pw_d_tn)
+        self.toNote.addRow("Conform Password:",self.cpw_d_tn)
+        self.toNote.addRow('', self.deToNoteButton)
+        self.decp = QDialog()
+        self.decp.setLayout(self.toNote)
+        self.decp.show()
+
+        self.deToNoteButton.clicked.connect(self.decryptToNotes)
+
+
+    def showErrorDialog(self, argv):
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+   
+        msg.setText("ERROR REQUEST")
+        msg.setWindowTitle("ERROR!")
+        msg.setInformativeText(argv)
+        msg.setStandardButtons(QMessageBox.Ok)
+        
+        retval = msg.exec_()
         
     def print_to_Browser(self):
         if str(self.listView.currentItem().text())[:6] != '_ECPD_':
@@ -318,6 +352,17 @@ class Postiky_Note(base_0, form_0):
             self.noteSheet[self.skNum].textEdit.setText(text)
             self.skNum = self.skNum + 1
             self.draftDel()
+        else:
+            self.open_crypto()
+            self.stackedLayout.setCurrentIndex(0)
+
+    def decryptToNotes(self):
+            data = self.read_crypto(self.pw_d_tn.text(), self.cpw_d_tn.text())
+            if data != None:
+                self.decp.close()
+                self.noteSheet[self.skNum] = Notes()
+                self.noteSheet[self.skNum].textEdit.setText(data)
+                self.skNum = self.skNum + 1
 
     def newNotes(self):
         self.noteSheet[self.skNum] = Notes()
@@ -354,6 +399,7 @@ class Notes(moveWidget, form_1):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
+        self.textEdit.setPlaceholderText("Take a note..")
         # background color
         self.colorNum = random.randrange(6)
         self.changeColor()
@@ -396,21 +442,16 @@ class Notes(moveWidget, form_1):
     def noteClose(self):
         text = self.textEdit.toPlainText()
         if text != '':
-            # if self.lock == True:
-            #       dilog window:
-            #           text = wde.data_encryption(key,text)
-            #           demo.save_crypto(text)
-            # else:
             fileName = time.strftime("%Y-%b-%d %Hh-%Mm-%Ss_",time.localtime())+ '.N' +str(time.time()).split('.')[1] +'.bin'
             File_packaged.save_draft(text, fileName)
             demo.list_Draft()
+            if self.lock == True:
+                demo.listView.setCurrentItem(demo.listView.findItems(fileName, QtCore.Qt.MatchContains)[0])
+                demo.crypto_page()
             self.close()
         else:
             self.close()
 
-    def encryption(self):
-
-            print("open a dailog creat remember-key and passwod")
     
     def crypto(self):
         if self.lock == False:
