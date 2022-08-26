@@ -86,7 +86,7 @@ class Postiky_Note(base_0, form_0):
 
         wde.forincludetesting()
 
-        self.setWindowTitle('Notes_List')
+        self.setWindowTitle('Notes List')
         self.setWindowIcon(QtGui.QIcon(':/icon/Posit.ico'))
         self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.WindowCloseButtonHint)
         self.setFixedSize(580, 380)
@@ -192,6 +192,11 @@ class Postiky_Note(base_0, form_0):
 
         menu = QMenu()
 
+        show = QAction("Show Main",self)
+        show.setIcon(self.style().standardIcon(QStyle.SP_TitleBarNormalButton))
+        show.triggered.connect(self.show)
+        menu.addAction(show)
+
         info = QAction("About",self)
         info.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
         info.triggered.connect(self.about)
@@ -274,7 +279,7 @@ class Postiky_Note(base_0, form_0):
                 else:
                     self.showErrorDialog("password comform failed.")
             else:
-                self.showErrorDialog("password width less than 6.")
+                self.showErrorDialog("password length less than 6.")
         else:
             self.showErrorDialog("please fill out password format: \n you need over 6 Number,Alpha or Sign.\n exp:'123abc+-*'\n if you want you can use Number only!\n exp:'123456'")
 
@@ -292,7 +297,7 @@ class Postiky_Note(base_0, form_0):
                 else:
                     self.showErrorDialog("password comform failed.")
             else:
-                self.showErrorDialog("password width less than 6.")
+                self.showErrorDialog("password length less than 6.")
         else:
             self.showErrorDialog("password format is incomplete.")
     def view_crypto(self):
@@ -451,7 +456,7 @@ class Notes(moveWidget, form_1):
         self.italicButton.clicked.connect(self.setItalic)
         self.underlineButton.clicked.connect(self.setUnderline)
         self.strikethroughButton.clicked.connect(self.setStrikeout)
-        self.togglebulletButton.clicked.connect(self.setBulletpoint)
+        self.listButton.clicked.connect(self.showNotesList)
         self.cryptoButton.clicked.connect(self.crypto)
     
 
@@ -514,8 +519,8 @@ class Notes(moveWidget, form_1):
             self.textEdit.setCurrentCharFormat(format)
             self.strikeout = False
 
-    def setBulletpoint(self):
-        print(".")
+    def showNotesList(self):
+        demo.show()
 
 
     def changeColor(self):

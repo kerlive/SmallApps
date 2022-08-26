@@ -192,7 +192,7 @@ QPushButton:pressed{
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="togglebulletButton">
+      <widget class="QPushButton" name="listButton">
        <property name="styleSheet">
         <string notr="true">QPushButton{
 	background-image: url(:/Button/UI/Element/TB.png);
