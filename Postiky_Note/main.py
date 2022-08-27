@@ -160,7 +160,7 @@ class Postiky_Note(base_0, form_0):
         self.perviewWidget.setMinimumHeight(311)
         self.addButton.setMaximumWidth(41)
         # set a number for open a mutiple widget
-        self.skNum = 1
+        self.skNum = 0
         self.noteSheet = {}
 
         # list draft files
@@ -168,7 +168,7 @@ class Postiky_Note(base_0, form_0):
         self.listView.setWordWrap(True)
 
         # Button
-        self.addButton.clicked.connect(self.newNotes)
+        self.addButton.clicked.connect(lambda: self.newNotes(self.geometry()))
         self.cryptoButton.clicked.connect(self.crypto_page)
         self.deleteButton.clicked.connect(self.draftDel)
         self.listView.itemClicked.connect(self.print_to_Browser)
@@ -208,6 +208,7 @@ class Postiky_Note(base_0, form_0):
         menu.addAction(quit)
 
         self.trayIcon.setContextMenu(menu)
+        self.anotherCall()
 
     def about(self):
         About = QMessageBox.information(
@@ -230,8 +231,8 @@ class Postiky_Note(base_0, form_0):
         cTimer.timeout.connect(self.checkNew)
     def checkNew(self):
         if single.buf[0] == 0:
-            self.show()
             single.buf[0] = 1
+            self.show()
 
     def echoMask(self):
         if self.Mask == True:
@@ -259,10 +260,10 @@ class Postiky_Note(base_0, form_0):
 
     def save_crypto(self):
         password = self.pw_e.text()
-        comform = self.cpw_e.text()
-        if password != '' and comform != '' :
+        conform = self.cpw_e.text()
+        if password != '' and conform != '' :
             if len(password) > 5:
-                if password == comform :
+                if password == conform :
                     data = File_packaged.open_draft(self.listView.currentItem().text())
                     crypted_data = wde.data_encryption(password, data) + '.' + self.rmbk_e.text()
                     print("data:")
@@ -277,25 +278,25 @@ class Postiky_Note(base_0, form_0):
                     self.crypto_page_reset()
 
                 else:
-                    self.showErrorDialog("password comform failed.")
+                    self.showErrorDialog("password conform failed.")
             else:
                 self.showErrorDialog("password length less than 6.")
         else:
-            self.showErrorDialog("please fill out password format: \n you need over 6 Number,Alpha or Sign.\n exp:'123abc+-*'\n if you want you can use Number only!\n exp:'123456'")
+            self.showErrorDialog("please fill out with password format: \n you need over 6 Number,Alphabet or Sign.\n exp:'123abc+-*'\n if you want you can use Number only!\n exp:'123456'")
 
-    def read_crypto(self, password, comform):
+    def read_crypto(self, password, conform):
         data = File_packaged.open_draft(self.listView.currentItem().text())
         crypto = data.split('.')[0]
-        if password != '' and comform != '' :
+        if password != '' and conform != '' :
             if len(password) > 5:
-                if password == comform :
+                if password == conform :
                     dcpd = wde.data_conversion(password, crypto)
                     if dcpd != '':
                         return dcpd
                     else:
                         self.showErrorDialog("password incorrect.")
                 else:
-                    self.showErrorDialog("password comform failed.")
+                    self.showErrorDialog("password conform failed.")
             else:
                 self.showErrorDialog("password length less than 6.")
         else:
@@ -319,6 +320,7 @@ class Postiky_Note(base_0, form_0):
         self.toNote.addRow('', self.deToNoteButton)
         self.decp = QDialog()
         self.decp.setLayout(self.toNote)
+        self.decp.setWindowTitle("Decrypt")
         self.decp.show()
 
         self.deToNoteButton.clicked.connect(self.decryptToNotes)
@@ -385,9 +387,12 @@ class Postiky_Note(base_0, form_0):
                 self.noteSheet[self.skNum].textEdit.setText(data)
                 self.skNum = self.skNum + 1
 
-    def newNotes(self):
-        self.noteSheet[self.skNum] = Notes()
-        self.skNum += 1
+    def newNotes(self, leftPoint):
+            self.noteSheet[self.skNum] = Notes()
+            self.noteSheet[self.skNum].move(leftPoint.topLeft())
+
+            self.skNum += 1
+
         
 """     self.newOne = Notes()
         self.new2 = Notes()
@@ -426,7 +431,7 @@ class Notes(moveWidget, form_1):
         self.changeColor()
 
         # Button
-        self.addButton.clicked.connect(demo.newNotes)
+        self.addButton.clicked.connect(lambda: demo.newNotes(self.geometry()))
         self.closeButton.clicked.connect(self.noteClose)
         self.colorButton.clicked.connect(self.changeColor)
 
@@ -469,6 +474,7 @@ class Notes(moveWidget, form_1):
             if self.lock == True:
                 demo.listView.setCurrentItem(demo.listView.findItems(fileName, QtCore.Qt.MatchContains)[0])
                 demo.crypto_page()
+                demo.show()
             self.close()
         else:
             self.close()
