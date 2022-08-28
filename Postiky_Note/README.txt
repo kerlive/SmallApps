@@ -4,12 +4,12 @@ you can easy to creat adding notes simply
 
 just click add button and write something, and close postit-sheet widget save draft (if you want save the note do not close application in trayicon "Quit" button before draft save)
 
-click note on list you can see it in preview page or you also can double click to bring it out.
+click note on list you can see it in preview page or you also can double click to pull it out.
 
 anyway you can easy to manage draft save file in main page, just click note on list and chooes encryption or delete button.
 (if you don't want lose your crypto-notes , you most write something in remember-key , ps:password encodeing is 'ASCII' so don't use other character it would make app down.)
 
-if you want edit encrypted notes, double click it and input correct password app would duplicate de text to postit-sheet widget.
+if you want edit encrypted notes, double click it and input correct password app would duplicate text to postit-sheet widget.
 
 finally click lock button on postit-sheet widget you can easy to jump to encryption page.
 

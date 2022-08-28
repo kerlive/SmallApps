@@ -7,7 +7,6 @@ __license__ = "GPL-3.0"
 __version__ = "0.1.0"
 
 import os, sys, time, hashlib, gzip, struct, random
-from pickle import NONE
 
 from multiprocessing import shared_memory
 key = "Postiky_Note"
@@ -351,12 +350,27 @@ class Postiky_Note(base_0, form_0):
 
     def draftDel(self):
         if self.listView.currentRow() != -1:
-            name = str(self.listView.currentItem().text())
-            dn  = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft/"+name)
-            if os.path.exists(dn):
-                os.remove(dn)
-            self.list_Draft()
-            self.stackedLayout.setCurrentIndex(0)
+            if str(self.listView.currentItem().text())[:6] == '_ECPD_':
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("Are you sure want to delete encrypted file>>")
+                msg.setWindowTitle("Conform...")
+                msg.setInformativeText('Remember-key: <span style=\"color:red;\">' + File_packaged.open_draft(self.listView.currentItem().text()).split('.')[1] + '</span>')
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msg.setDefaultButton(QMessageBox.No)
+                retval = msg.exec_()
+                if retval == QMessageBox.Yes:
+                    self.deleteFile()
+            else:
+                self.deleteFile()
+            
+    def deleteFile(self):
+        name = str(self.listView.currentItem().text())
+        dn  = os.path.join(os.path.dirname(os.path.abspath(__name__)),"Draft/"+name)
+        if os.path.exists(dn):
+            os.remove(dn)
+        self.list_Draft()
+        self.stackedLayout.setCurrentIndex(0)
 
     def list_Draft(self):
         self.listView.clear()
