@@ -1,0 +1,7 @@
+### simply compile 'ProjectStatus' python source to exe yourself ###
+---Step.1 install pyinstaller package---
+commandline> pip install pyinstaller
+
+---Step.2 compile file to executable file (you need change source absolutePath yourself)---
+commandline> pwd (be sure your local path in source folder)
+commandline> pyinstaller.exe .\ShowStateInfo.py --noconfirm --onefile --windowed

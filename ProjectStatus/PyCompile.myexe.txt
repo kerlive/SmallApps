@@ -1,0 +1,1 @@
+pyinstaller.exe .\ShowStateInfo.py --noconfirm --onefile --windowed
