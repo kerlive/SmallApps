@@ -444,11 +444,6 @@ class Notes(moveWidget, form_1):
         self.colorNum = random.randrange(6)
         self.changeColor()
 
-        # Button
-        self.addButton.clicked.connect(lambda: demo.newNotes(self.geometry()))
-        self.closeButton.clicked.connect(self.noteClose)
-        self.colorButton.clicked.connect(self.changeColor)
-
         # Event
         self.invisiableArea.installEventFilter(self)
         self.controlTools.installEventFilter(self)
@@ -482,6 +477,43 @@ class Notes(moveWidget, form_1):
         self.strikethroughButton.clicked.connect(self.setStrikeout)
         self.listButton.clicked.connect(self.showNotesList)
         self.cryptoButton.clicked.connect(self.crypto)
+
+        # Signal
+        self.textEdit.cursorPositionChanged.connect(self.formatScratch)
+
+
+        # Button
+        self.addButton.clicked.connect(lambda: demo.newNotes(self.geometry()))
+        self.closeButton.clicked.connect(self.noteClose)
+        self.colorButton.clicked.connect(self.changeColor)
+
+    def formatScratch(self):
+        font = self.textEdit.currentCharFormat()
+        if font.fontStrikeOut() == False:
+            self.strikeout = False
+        if font.fontStrikeOut() == True:
+            self.strikeout = True
+        if font.fontUnderline() == False:
+            self.underline = False
+        if font.fontUnderline() == True:
+            self.underline = True
+        if font.fontItalic() == False:
+            self.italic = False
+        if font.fontItalic() == True:
+            self.italic = True
+        if (font.fontWeight() > 50) == False:
+            self.bold = False
+        if (font.fontWeight() > 50) == True:
+            self.bold = True
+        """
+        print(' Bold: {bold}, Italic: {italic}, Underline: {underline}, StrikeOut: {strikeout}'.format(
+
+                    bold = font.fontWeight() > 50, 
+                    italic = font.fontItalic(), 
+                    underline = font.fontUnderline(),
+                    strikeout = font.fontStrikeOut()
+
+                ))"""
 
     
     def eventFilter(self, object, event):
@@ -528,7 +560,6 @@ class Notes(moveWidget, form_1):
         if self.bold == False:
             self.textEdit.setFontWeight(QtGui.QFont.Bold)
             self.bold = True
-            print(self.textEdit.currentCharFormat())
         else:
             self.textEdit.setFontWeight(QtGui.QFont.Normal)
             self.bold = False
