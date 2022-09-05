@@ -1,1 +1,6 @@
+--win10_x64--
 pyinstaller.exe .\main.py --noconfirm -i .\Posit.ico --onefile --windowed --add-data "C:\Users\kevin\Desktop\Compile_to_EXEcutableFile\Postiky_Note\UI;UI\"
+
+
+--win7_x64--
+pyinstaller.exe .\main.py --noconfirm --icon .\Posit.ico --onefile --windowed --add-data "C:\Users\Kevin_VM\Desktop\Postiky_Note\UI;\UI"
