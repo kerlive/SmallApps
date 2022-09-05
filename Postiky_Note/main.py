@@ -449,9 +449,14 @@ class Notes(moveWidget, form_1):
         self.closeButton.clicked.connect(self.noteClose)
         self.colorButton.clicked.connect(self.changeColor)
 
-        self.controlTools.setVisible(False)
+        # Event
         self.invisiableArea.installEventFilter(self)
         self.controlTools.installEventFilter(self)
+        self.textEdit.installEventFilter(self)
+        
+        self.controlTools.setVisible(False)
+        self.textEdit.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.textEdit.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
         self.show()
 
@@ -477,6 +482,23 @@ class Notes(moveWidget, form_1):
         self.strikethroughButton.clicked.connect(self.setStrikeout)
         self.listButton.clicked.connect(self.showNotesList)
         self.cryptoButton.clicked.connect(self.crypto)
+
+    
+    def eventFilter(self, object, event):
+        if object == self.textEdit and event.type() == QtCore.QEvent.Enter:
+            self.textEdit.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+            return True
+        if object == self.textEdit and event.type() == QtCore.QEvent.Leave:
+            self.textEdit.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            return True
+
+        if object == self.invisiableArea and event.type() == QtCore.QEvent.Enter:
+            self.controlTools.setVisible(True)
+            return True
+        if object == self.controlTools and event.type() == QtCore.QEvent.Leave:
+            self.controlTools.setVisible(False)
+            return True
+        return False
     
 
     def noteClose(self):
@@ -570,14 +592,6 @@ class Notes(moveWidget, form_1):
                 self.label.setStyleSheet('background-color: rgb(255, 247, 209);')
                 self.textEdit.setStyleSheet('background-color: rgb(255, 247, 209);  border: 0;  font: 12pt "Times New Roman";')
             
-
-    def eventFilter(self, object, event):
-        if event.type() == QtCore.QEvent.Enter:
-            self.controlTools.setVisible(True)
-            return True
-        elif object == self.controlTools and event.type() == QtCore.QEvent.Leave:
-            self.controlTools.setVisible(False)
-        return False
 
 if __name__ == '__main__':
 

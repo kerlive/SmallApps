@@ -328,9 +328,9 @@ QPushButton:pressed{
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>50</x>
       <y>80</y>
-      <width>271</width>
+      <width>291</width>
       <height>251</height>
      </rect>
     </property>
